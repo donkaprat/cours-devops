@@ -2,21 +2,24 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
+const PORT = "8080"
+
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Hello, World!")
-	})
+	http.HandleFunc("/", handler)
+	http.HandleFunc("/health-check", HealthCheckHandler)
+	fmt.Println("Server Web started on port", PORT)
+	log.Fatal(http.ListenAndServe(":"+PORT, nil))
+}
 
-	http.HandleFunc("/toto", func(w http.ResponseWriter, r *http.Request) {
-		// Renvoie une erreur 404 (Not Found)
-		http.Error(w, "Page introuvable", http.StatusNotFound)
-	})
-
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		fmt.Println("Erreur lors du démarrage du serveur :", err)
-	}
+func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "Hello, World!")
+}
+func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, `{"alive": true}`)
 }
